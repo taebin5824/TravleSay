@@ -39,3 +39,15 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### OS별 임시 파일 ###
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+### 로그 / 임시 / 보안 파일 ###
+*.log
+*.tmp
+*.swp
+*.env
