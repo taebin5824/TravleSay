@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>회원가입 - TravleSay</title>
+
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/auth.css" />
+
+    <!-- 라이브러리 먼저 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- 공통(헤더/푸터 include + 로그인표시) -->
+    <script defer src="/js/common-ui.js"></script>
+    <!-- 페이지 로직 -->
+    <script defer src="/js/signup.js"></script>
+</head>
+<body>
+<!-- 공통 헤더 -->
+<div id="__header__" data-include="/fragments/header.html"></div>
+
+<main class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <img src="/img/TravleSayLogo.png" alt="TravleSay">
+        </div>
+
+        <form id="signupForm" class="auth-form" novalidate>
+            <!-- 아이디 -->
+            <div class="form-group">
+                <input type="text" id="loginId" class="auth-input"
+                       placeholder="아이디" autocomplete="username"
+                       minlength="4" maxlength="50" required />
+                <div class="error-msg" id="error-loginId"></div>
+            </div>
+
+            <!-- 비밀번호 -->
+            <div class="form-group">
+                <input type="password" id="password" class="auth-input"
+                       placeholder="비밀번호" autocomplete="new-password"
+                       minlength="8" maxlength="100" required />
+                <div class="error-msg" id="error-password"></div>
+            </div>
+
+            <!-- 비밀번호 확인 -->
+            <div class="form-group">
+                <input type="password" id="passwordConfirm" class="auth-input"
+                       placeholder="비밀번호확인" autocomplete="new-password"
+                       minlength="8" maxlength="100" required />
+                <div class="error-msg" id="error-passwordConfirm"></div>
+            </div>
+
+            <!-- 이메일 -->
+            <div class="form-group">
+                <input type="email" id="email" class="auth-input"
+                       placeholder="이메일" autocomplete="email" required />
+                <div class="error-msg" id="error-email"></div>
+            </div>
+
+            <!-- 휴대폰 -->
+            <div class="form-group">
+                <input type="tel" id="phoneNumber" class="auth-input"
+                       placeholder="전화번호 (예: 010-1234-5678)"
+                       inputmode="numeric" maxlength="20" />
+                <div class="error-msg" id="error-phoneNumber"></div>
+            </div>
+
+            <button type="submit" class="auth-btn">가입</button>
+            <div class="auth-links" style="justify-content:center">
+                <a href="/login.html">이미 계정이 있어요</a>
+            </div>
+        </form>
+
+        <!-- 성공 메시지(전역) -->
+        <p id="signupSuccess" style="margin-top:8px;color:#10b981;font-size:14px;display:none;"></p>
+    </div>
+</main>
+
+<!-- 공통 푸터 -->
+<div id="__footer__" data-include="/fragments/footer.html"></div>
+</body>
+</html>
