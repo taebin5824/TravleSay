@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>TravleSay</title>
+    <link rel="stylesheet" href="/css/main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="/js/common-ui.js"></script>
+    <script defer src="/js/app.js"></script>
+</head>
+<body>
+<!-- 공통 헤더 영역: 페이지마다 동일하게 사용 -->
+<div id="__header__" data-include="/fragments/header.html"></div>
+
+<section class="hero">
+    <div class="ad-box" role="img" aria-label="광고 혹은 여행정보 제공 이미지 영역">
+        <div class="ad-text">광고 혹은 여행정보 제공용</div>
+    </div>
+</section>
+
+<main class="main">
+    <div class="grid-2">
+        <section aria-labelledby="tit-reviews">
+            <h2 id="tit-reviews" class="section-title">Hot Reviews</h2>
+            <div class="list-card" id="listReviews"></div>
+        </section>
+        <section aria-labelledby="tit-plan">
+            <h2 id="tit-plan" class="section-title">Hot Plan</h2>
+            <div class="list-card" id="listPlans"></div>
+        </section>
+    </div>
+</main>
+
+<!-- 공통 푸터 영역: 페이지마다 동일하게 사용 -->
+<div id="__footer__" data-include="/fragments/footer.html"></div>
+</body>
+</html>
