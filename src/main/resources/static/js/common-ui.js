@@ -8,7 +8,7 @@ function isTokenExpired(token) {
         const expMs = (payload.exp || 0) * 1000;
         return Date.now() >= expMs;
     } catch {
-        return true; // 파싱 실패 시 만료로 간주
+        return true;
     }
 }
 function isLoggedIn() {
@@ -16,16 +16,16 @@ function isLoggedIn() {
     return !!t && !isTokenExpired(t);
 }
 
-// =============== 헤더/푸터 인클루드 ===============
 async function includeFragment(el) {
     const url = el.getAttribute("data-include");
     if (!url) return;
     const res = await fetch(url, { cache: "no-cache" });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     el.innerHTML = await res.text();
-    // 헤더가 갓 삽입된 경우 로그인 영역 렌더링
     if (el.id === "__header__") {
         await renderAuth();
+        // ✅ 이벤트 위임: 한 번만 등록
+        setupAuthDelegation();
     }
 }
 
@@ -37,53 +37,81 @@ async function includeAll() {
     }
 }
 
-// =============== 인증 영역 렌더링 (loginId 표기) ===============
 async function renderAuth() {
     const box = document.getElementById("authSection");
-    if (!box) return;
-
-    // 로그인 안됨 → 로그인 링크
-    if (!isLoggedIn()) {
-        box.innerHTML = `<a href="/login.html" class="login-link">로그인</a>`;
+    if (!box) {
+        console.warn("[auth] #authSection 없음");
         return;
     }
 
-    // 로그인됨 → /api/member/me 호출해서 loginId 표시
+    if (!isLoggedIn()) {
+        box.innerHTML = `<a href="/login.html" class="login-link">로그인</a>`;
+        console.debug("[auth] not logged in → show login link");
+        return;
+    }
+
     const token = getAccessToken();
     try {
         const res = await axios.get("/api/member/me", {
             headers: { Authorization: `Bearer ${token}` }
         });
         const { loginId } = res.data || {};
-
-        // loginId가 없으면 안전하게 로그인 링크로 대체
         if (!loginId) {
             box.innerHTML = `<a href="/login.html" class="login-link">로그인</a>`;
+            console.debug("[auth] /me ok but no loginId → show login link");
             return;
         }
 
         box.innerHTML = `
-      <button class="btn" id="btnLogout" type="button">로그아웃</button>
-      <div class="avatar">
-        <img src="https://i.pravatar.cc/48?u=${encodeURIComponent(loginId)}" alt="">
-        <span>${loginId}</span>
-      </div>
-    `;
-
-        // 로그아웃 클릭 시 토큰 제거 후 메인 이동
-        document.getElementById("btnLogout")?.addEventListener("click", () => {
-            sessionStorage.removeItem("accessToken");
-            location.href = "/index.html";
-        });
+  <button class="btn" id="btnLogout" type="button">로그아웃</button>
+  <a class="avatar" id="navAvatar" href="/profile-edit.html" title="개인정보 수정">
+    <img src="https://i.pravatar.cc/48?u=${encodeURIComponent(loginId)}" alt="">
+    <span id="navLoginId">${loginId}</span>
+  </a>
+`;
+        console.debug("[auth] logged in as:", loginId);
 
     } catch (err) {
-        console.error("사용자 정보 불러오기 실패:", err);
-        // 401 등 실패 시 로그인 링크로 전환
+        console.error("[auth] /api/member/me 실패:", err);
         box.innerHTML = `<a href="/login.html" class="login-link">로그인</a>`;
     }
 }
 
-// =============== 부트스트랩 ===============
+let _authDelegationBound = false;
+function setupAuthDelegation() {
+    if (_authDelegationBound) return;
+    const box = document.getElementById("authSection");
+    if (!box) return;
+
+    box.addEventListener("click", async (e) => {
+        const target = e.target.closest("#btnLogout");
+        if (!target) return;
+        e.preventDefault();
+
+        const token = getAccessToken();
+        console.debug("[logout] clicked, token exists?", !!token);
+
+        try {
+            if (token) {
+                const res = await axios.post("/api/member/logout", null, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                console.debug("[logout] server ok:", res.status);
+            } else {
+                console.debug("[logout] no token, skipping server call");
+            }
+        } catch (err) {
+            console.warn("[logout] API 실패(프론트만 삭제):", err);
+        } finally {
+            sessionStorage.removeItem("accessToken");
+            location.href = "/index.html";
+        }
+    });
+
+    _authDelegationBound = true;
+    console.debug("[auth] delegation bound");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     includeAll();
 });
