@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>개인정보 수정 | TravleSay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- 공용 스타일 (캐시버스터 권장) -->
+    <link rel="stylesheet" href="/css/main.css?v=20250816" />
+    <link rel="stylesheet" href="/css/auth.css?v=20250816" />
+
+    <!-- 스크립트 로드 순서: axios -> common-ui -> profile-edit (모두 defer) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="/js/common-ui.js?v=20250816"></script>
+    <script defer src="/js/profile-edit.js?v=20250816T1700"></script>
+</head>
+<body>
+<!-- 헤더 -->
+<header id="__header__" class="site-header" data-include="/fragments/header.html"></header>
+
+<main class="auth-wrap">
+    <section class="auth-card">
+        <div class="auth-logo">
+            <img src="/img/TravleSayLogo.png" alt="TravleSay" />
+        </div>
+
+        <form id="profileForm" class="auth-form" novalidate>
+            <!-- 아이디 -->
+            <div class="form-group">
+                <input id="loginId" class="auth-input" type="text" placeholder="아이디" autocomplete="username" />
+                <div id="err-loginId" class="error-msg"></div>
+            </div>
+
+            <!-- 비밀번호(변경 시에만 입력) -->
+            <div class="form-group">
+                <input id="password" class="auth-input" type="password"
+                       placeholder="비밀번호" autocomplete="new-password" autocapitalize="off" spellcheck="false" />
+                <div id="err-password" class="error-msg"></div>
+            </div>
+
+            <!-- 비밀번호 확인 -->
+            <div class="form-group">
+                <input id="passwordConfirm" class="auth-input" type="password"
+                       placeholder="비밀번호확인" autocomplete="new-password" autocapitalize="off" spellcheck="false" />
+                <div id="err-passwordConfirm" class="error-msg"></div>
+            </div>
+
+            <!-- 이메일 -->
+            <div class="form-group">
+                <input id="email" class="auth-input" type="email" placeholder="이메일" autocomplete="email" />
+                <div id="err-email" class="error-msg"></div>
+            </div>
+
+            <!-- 전화번호 -->
+            <div class="form-group">
+                <input id="phoneNumber" class="auth-input" type="tel" placeholder="전화번호" autocomplete="tel" />
+                <div id="err-phoneNumber" class="error-msg"></div>
+            </div>
+
+            <!-- 전송 버튼 -->
+            <button id="btnSubmit" type="submit" class="auth-btn" disabled>수정</button>
+
+            <div class="auth-links" style="justify-content:center">
+                <a href="/withdraw.html">회원탈퇴</a>
+            </div>
+
+            <!-- 폼 공통 에러 -->
+            <div id="err-form" class="error-msg" style="text-align:center"></div>
+        </form>
+    </section>
+</main>
+
+<!-- 현재 비밀번호 확인 모달 -->
+<div id="pwModal" class="modal-backdrop" aria-hidden="true" style="display:none;">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pwModalTitle">
+        <h3 id="pwModalTitle" style="margin-bottom:12px;">현재 비밀번호 확인</h3>
+        <!-- 문구 수정: 모든 정보 변경 시 -->
+        <p style="margin:0 0 8px 0; font-size:0.95rem;">
+            개인정보 변경을 위해 현재 비밀번호를 입력해 주세요.
+        </p>
+
+        <div class="form-group" style="margin-top:12px;">
+            <input id="currentPassword" class="auth-input" type="password" placeholder="현재 비밀번호" autocomplete="current-password" />
+            <div id="err-currentPassword" class="error-msg"></div>
+        </div>
+
+        <div class="modal-actions" style="display:flex; gap:8px; margin-top:12px;">
+            <button id="btnPwCancel" type="button" class="auth-btn" style="opacity:.7;">취소</button>
+            <button id="btnPwConfirm" type="button" class="auth-btn">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 푸터 -->
+<footer data-include="/fragments/footer.html"></footer>
+</body>
+</html>
