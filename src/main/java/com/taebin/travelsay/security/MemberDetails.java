@@ -36,7 +36,7 @@ public class MemberDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return !MemberStatus.BANNED.equals(member.getStatus());
+        return member.getStatus() == MemberStatus.ACTIVE;
     }
 
     @Override
@@ -52,5 +52,9 @@ public class MemberDetails implements UserDetails {
     @Override
     public String getUsername() {
         return member.getLoginId();
+    }
+
+    public String getMemberId() {
+        return member.getMemberId();
     }
 }
