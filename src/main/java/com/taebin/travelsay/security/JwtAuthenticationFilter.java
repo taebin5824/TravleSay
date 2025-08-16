@@ -1,5 +1,6 @@
 package com.taebin.travelsay.security;
 
+import com.taebin.travelsay.domain.member.MemberRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -25,24 +25,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberDetailsService memberDetailsService;
+    private final MemberRepository memberRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        // 이미 인증된 요청이면 스킵
+        // 이미 인증된 경우 패스
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             chain.doFilter(req, res);
             return;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("[JwtAuthFilter] path={}", req.getRequestURI());
-        }
+        if (log.isDebugEnabled()) log.debug("[JwtAuthFilter] path={}", req.getRequestURI());
 
-        // Bearer 토큰 엄격 추출
+        // Bearer 토큰 추출
         final String token = extractBearerToken(req, jwtTokenProvider.headerName());
-
         if (token == null) {
             if (log.isDebugEnabled()) log.debug("[JwtAuthFilter] no valid Bearer token");
             chain.doFilter(req, res);
@@ -56,63 +54,61 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (!jwtTokenProvider.validate(token)) {
                 log.warn("[JwtAuthFilter] token validate = false");
-                chain.doFilter(req, res);
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
 
             final String username = jwtTokenProvider.getUsername(token);
-            if (username == null || username.isBlank()) {
-                log.warn("[JwtAuthFilter] username is null/blank");
-                chain.doFilter(req, res);
+            final Integer verInToken = jwtTokenProvider.getVersion(token);
+            if (username == null || username.isBlank() || verInToken == null) {
+                log.warn("[JwtAuthFilter] username/ver invalid (username='{}', ver={})", username, verInToken);
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
 
+            // DB tokenVersion과 비교
+            final Integer currentVer = memberRepository.findTokenVersionByLoginId(username);
+            if (currentVer == null || !verInToken.equals(currentVer)) {
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
+            // 인증객체 구성 (details에는 tv만 담는다)
             var ud = memberDetailsService.loadUserByUsername(username);
             var auth = new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities());
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-            SecurityContextHolder.getContext().setAuthentication(auth);
 
-            if (log.isDebugEnabled()) log.debug("[JwtAuthFilter] SecurityContext set for user={}", username);
+            auth.setDetails(verInToken);
+            req.setAttribute("jwtVersion", verInToken);
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            if (log.isDebugEnabled()) log.debug("[JwtAuthFilter] SecurityContext set user={}, tv={}", username, verInToken);
         } catch (Exception e) {
             log.warn("[JwtAuthFilter] validate error: {}", e.getMessage(), e);
             req.setAttribute("jwt_error", e.getMessage());
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         chain.doFilter(req, res);
     }
 
-    /**
-     * Authorization 헤더에서 Bearer 토큰을 '엄격하게' 추출한다.
-     * - 헤더 이름: "Authorization" / "authorization" / configuredHeaderName 모두 허용
-     * - 값: 반드시 "Bearer␠<token>" 형태(대소문자 무시). 공백 없이 붙어 있으면 거부.
-     * - token은 JWT 형식(헤더.페이로드.서명)과 URL-safe base64 문자만 허용.
-     */
     private String extractBearerToken(HttpServletRequest req, String configuredHeaderName) {
         String header = req.getHeader(AUTHZ_STD);
         if (isBlank(header) && configuredHeaderName != null) header = req.getHeader(configuredHeaderName);
         if (isBlank(header)) header = req.getHeader(AUTHZ_LWR);
         if (isBlank(header)) return null;
 
-        // 앞뒤 공백 제거
         final String h = header.trim();
-
-        // 정확히 첫 번째 공백 위치 찾기 (스킴 + 공백 + 토큰)
         final int spaceIdx = h.indexOf(' ');
-        if (spaceIdx <= 0) return null; // 공백이 없거나 " Bearer" 같은 이상한 값
+        if (spaceIdx <= 0) return null;
 
         final String scheme = h.substring(0, spaceIdx).toLowerCase(Locale.ROOT);
-        if (!"bearer".equals(scheme)) return null; // 다른 스킴이면 거부
+        if (!"bearer".equals(scheme)) return null;
 
         String token = h.substring(spaceIdx + 1).trim();
         if (isBlank(token)) return null;
 
-        // JWT 빠른 형태 검증: 3개 파트, URL-safe base64 문자만
-        if (!token.matches("^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$")) {
-            if (log.isDebugEnabled()) log.debug("[JwtAuthFilter] token format invalid");
-            return null;
-        }
-
-        // 길이 상한(선택): 과도하게 긴 입력 방어
+        if (!token.matches("^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$")) return null;
         if (token.length() > 4096) return null;
 
         return token;
@@ -124,22 +120,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest req) {
-        String p = req.getRequestURI();
+        final String p = req.getRequestURI();
 
-        // 정적/공개 리소스 스킵 (성능 최적화)
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) return true;
+
+        // 정적/공개 리소스
         if (p.startsWith("/css/") || p.startsWith("/js/") || p.startsWith("/img/")
                 || p.startsWith("/assets/") || p.startsWith("/fragments/")
-                || p.equals("/") || p.equals("/index.html") || p.equals("/login.html")
-                || p.equals("/favicon.ico")) {
-            return true;
-        }
+                || p.equals("/favicon.ico")) return true;
 
-        // 인증 불필요 API
-        if (p.startsWith("/api/member/signup") || p.startsWith("/api/member/login")
-                || p.startsWith("/swagger-ui/") || p.startsWith("/v3/api-docs")
-                || "OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            return true;
-        }
+        // 공개 페이지
+        if (p.equals("/") || p.equals("/index.html") || p.equals("/login.html")
+                || p.equals("/signup.html") || p.equals("/profile-edit.html")
+                || p.equals("/withdraw.html")) return true;
+
+        // 공개 API
+        if (p.equals("/api/member/signup") || p.equals("/api/member/login")) return true;
+
+        if (p.startsWith("/swagger-ui/") || p.startsWith("/v3/api-docs")) return true;
+
         return false;
     }
 }
