@@ -5,6 +5,7 @@ import com.taebin.travelsay.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -27,14 +28,22 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> response.sendError(401)))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**","/js/**","/img/**", "/favicon.ico","/fragments/**").permitAll()
-                        .requestMatchers("/","/index.html","/login.html","/signup.html").permitAll()
+                        .requestMatchers(
+                                "/", "/index.html",
+                                "/login.html", "/signup.html",
+                                "/profile-edit.html", "/withdraw.html",
+                                "/fragments/**", "/css/**", "/js/**", "/img/**", "/assets/**", "/favicon.ico"
+                        ).permitAll()
 
-                        .requestMatchers("/api/member/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/member/login", "/api/member/signup").permitAll()
 
-                        .requestMatchers("/api/member/me").authenticated()
-                        .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/member/logout", "/api/member/inactive").permitAll()
+
+                        .requestMatchers("/api/**").authenticated()
+
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                 );
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
