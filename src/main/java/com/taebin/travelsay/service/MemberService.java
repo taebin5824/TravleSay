@@ -98,7 +98,7 @@ public class MemberService {
             throw new IllegalStateException("비활성화된 계정입니다.");
         }
 
-        String accessToken = jwtTokenProvider.createTokenWithVersion(
+        String accessToken = jwtTokenProvider.createToken(
                 member.getMemberId(),
                 member.getLoginId(),
                 member.getTokenVersion()
