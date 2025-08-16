@@ -58,6 +58,9 @@ public class Member extends BaseTimeEntity {
     @Column(name = "provider_id", length = 255)
     private String providerId;
 
+    @Column(name = "token_version", nullable = false)
+    private int tokenVersion = 0;
+
     public void setForSignup(String loginId, String password, String email, String phoneNumber,
                              MemberStatus status, MemberRole role) {
         this.loginId = loginId;
@@ -66,5 +69,29 @@ public class Member extends BaseTimeEntity {
         this.phoneNumber = phoneNumber;
         this.status = status;
         this.role = role;
+    }
+
+
+    public void setTokenVersion(int tokenVersion) {
+        this.tokenVersion = tokenVersion;
+    }
+
+    public void setStatus(MemberStatus status) {
+        this.status = status;
+    }
+
+    public void setLoginId(String loginId) {
+        this.loginId = loginId;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
