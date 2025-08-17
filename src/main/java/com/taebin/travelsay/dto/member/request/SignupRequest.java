@@ -1,4 +1,4 @@
-package com.taebin.travelsay.dto;
+package com.taebin.travelsay.dto.member.request;
 
 import jakarta.validation.constraints.*;
 

@@ -1,6 +1,12 @@
 package com.taebin.travelsay.controller;
 
-import com.taebin.travelsay.dto.*;
+import com.taebin.travelsay.dto.member.request.InactivateMemberRequest;
+import com.taebin.travelsay.dto.member.request.LoginRequest;
+import com.taebin.travelsay.dto.member.request.SignupRequest;
+import com.taebin.travelsay.dto.member.request.UpdateProfileRequest;
+import com.taebin.travelsay.dto.member.response.AuthResponse;
+import com.taebin.travelsay.dto.member.response.MeResponse;
+import com.taebin.travelsay.dto.member.response.UpdateProfileResponse;
 import com.taebin.travelsay.security.MemberDetails;
 import com.taebin.travelsay.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;

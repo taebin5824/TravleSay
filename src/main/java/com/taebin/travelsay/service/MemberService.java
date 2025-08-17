@@ -5,7 +5,13 @@ import com.taebin.travelsay.domain.member.Member;
 import com.taebin.travelsay.domain.member.MemberRepository;
 import com.taebin.travelsay.domain.member.MemberRole;
 import com.taebin.travelsay.domain.member.MemberStatus;
-import com.taebin.travelsay.dto.*;
+import com.taebin.travelsay.dto.member.request.InactivateMemberRequest;
+import com.taebin.travelsay.dto.member.request.LoginRequest;
+import com.taebin.travelsay.dto.member.request.SignupRequest;
+import com.taebin.travelsay.dto.member.request.UpdateProfileRequest;
+import com.taebin.travelsay.dto.member.response.AuthResponse;
+import com.taebin.travelsay.dto.member.response.MeResponse;
+import com.taebin.travelsay.dto.member.response.UpdateProfileResponse;
 import com.taebin.travelsay.security.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +21,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
