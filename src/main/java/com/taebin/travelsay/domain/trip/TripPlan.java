@@ -15,7 +15,7 @@ import lombok.*;
         }
 )
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 
 public class TripPlan extends BaseTimeEntity {
 
@@ -44,4 +44,31 @@ public class TripPlan extends BaseTimeEntity {
         this.isPublic = isPublic;
         this.isCompleted = isCompleted;
     }
+
+    public static TripPlan create(Member member, String title, Boolean isPublic) {
+        return TripPlan.builder()
+                .member(member)
+                .title(title)
+                .isPublic(false)
+                .build();
+    }
+
+    public void changeTitle(String title) {
+        if (title == null || title.isBlank())
+            throw new IllegalArgumentException("제목은 비어있을 수 없습니다.");
+
+        if (title.length() > 200)
+            throw new IllegalArgumentException("제목은 200자 이하여야 합니다.");
+
+        this.title = title;
+    }
+
+    public void setVisibility(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.isCompleted = completed;
+    }
+
 }
