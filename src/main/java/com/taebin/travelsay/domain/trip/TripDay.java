@@ -2,6 +2,7 @@ package com.taebin.travelsay.domain.trip;
 
 import com.taebin.travelsay.domain.common.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +16,7 @@ import java.time.LocalDate;
         indexes = @Index(name = "ix_day_plan_date", columnList = "trip_plan_id, trip_date")
 )
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TripDay extends BaseTimeEntity {
 
     @Id
@@ -29,4 +30,13 @@ public class TripDay extends BaseTimeEntity {
 
     @Column(name = "trip_date", nullable = false)
     private LocalDate tripDate;
+
+    public static TripDay create(TripPlan plan, LocalDate date) {
+        if (plan == null) throw new IllegalArgumentException("tripPlan is null");
+        if (date == null) throw new IllegalArgumentException("tripDate is null");
+        TripDay d = new TripDay();
+        d.tripPlan = plan;
+        d.tripDate = date;
+        return d;
+    }
 }
