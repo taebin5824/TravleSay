@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -47,7 +48,7 @@ public class MemberApiController {
         }
 
         Integer tv = null;
-        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getDetails() instanceof Integer v) {
             tv = v;
         }
@@ -56,7 +57,7 @@ public class MemberApiController {
             if (v instanceof Integer) tv = (Integer) v;
         }
 
-        memberService.logoutByMemberId(principal.getMemberId(), tv); // ✅ memberId 사용
+        memberService.logoutByMemberId(principal.getMemberId(), tv);
         return ResponseEntity.noContent().build();
     }
 
