@@ -32,13 +32,13 @@ public class TripPlan extends BaseTimeEntity {
     private String title;
 
     @Column(name = "is_public", nullable = false)
-    private Boolean isPublic = false;
+    private boolean isPublic = false;
 
     @Column(name = "is_completed", nullable = false)
-    private Boolean isCompleted = false;
+    private boolean isCompleted = false;
 
     @Builder
-    private TripPlan(Member member, String title, Boolean isPublic, Boolean isCompleted) {
+    private TripPlan(Member member, String title, boolean isPublic, boolean isCompleted) {
         this.member = member;
         this.title = title;
         this.isPublic = isPublic;
@@ -49,7 +49,8 @@ public class TripPlan extends BaseTimeEntity {
         return TripPlan.builder()
                 .member(member)
                 .title(title)
-                .isPublic(false)
+                .isPublic(Boolean.TRUE.equals(isPublic))
+                .isCompleted(false)
                 .build();
     }
 
