@@ -13,13 +13,13 @@ import com.taebin.travelsay.dto.trip.item.request.CreateItemRequest;
 import com.taebin.travelsay.dto.trip.item.request.UpdateItemRequest;
 import com.taebin.travelsay.dto.trip.plan.request.CreatePlanRequest;
 import com.taebin.travelsay.dto.trip.plan.request.UpdatePlanRequest;
+import com.taebin.travelsay.dto.trip.plan.response.MyPlanRow;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -50,8 +50,8 @@ public class TripService {
 
     public void deletePlan(Long planId, String memberId) {
         TripPlan plan = getOwnedPlanOrThrow(planId, memberId);
-        // 단방향이라 명시적 삭제 순서 필요
-        tripItemRepository.deleteByTripDayId(plan.getId());
+
+        tripItemRepository.deleteByTripPlanId(plan.getId());
         tripDayRepository.deleteByTripPlanId(plan.getId());
         tripPlanRepository.delete(plan);
     }
@@ -90,30 +90,21 @@ public class TripService {
     }
 
     // ===== Item =====
-    // orderNo가 있으면 그 위치에, 없으면 startTime 기준 기본 위치
-    public TripItem addItem(Long tripDayId, CreateItemRequest request, String memberId) {
-        TripDay day = tripDayRepository.findById(tripDayId)
-                .orElseThrow(() -> new EntityNotFoundException("day"));
+    public TripItem addItem(Long dayId, CreateItemRequest req, String memberId) {
+        TripDay day = tripDayRepository.findById(dayId).orElseThrow(() -> new EntityNotFoundException("day"));
         ensurePlanOwnership(day.getTripPlan(), memberId);
 
-        int lastOrderNo = tripItemRepository.countByTripDayId(tripDayId);
-        int targetPosition;
+        int last = tripItemRepository.countByTripDayId(dayId);
+        int orderNo = (req.orderNo() == null) ? last + 1 : req.orderNo();
+        if (orderNo < 1 || orderNo > last + 1) throw new IllegalArgumentException("orderNo 범위 오류");
 
-        if (request.orderNo() != null) {
-            if (request.orderNo() < 1 || request.orderNo() > lastOrderNo + 1) {
-                throw new IllegalArgumentException("orderNo 범위 오류");
-            }
-            targetPosition = request.orderNo();
-        } else {
-            targetPosition = computeInsertPositionByStartTime(tripDayId, request.startTime(), null);
+        if (orderNo <= last) {
+            shift(dayId, orderNo, last, +1);
         }
 
-        if (targetPosition <= lastOrderNo) {
-            shiftOrderRange(tripDayId, targetPosition, lastOrderNo, +1);
-        }
+        TripItem item = TripItem.create(day, req.title(), req.startTime(),
+                req.amount(), req.merchant(), req.memo(), orderNo);
 
-        TripItem item = TripItem.create(day, request.title(), request.startTime(),
-                request.amount(), request.merchant(), request.memo(), targetPosition);
         return tripItemRepository.save(item);
     }
 
@@ -140,7 +131,7 @@ public class TripService {
 
         int lastOrderNo = tripItemRepository.countByTripDayId(tripDayId);
         if (removedOrderNo <= lastOrderNo) {
-            shiftOrderRange(tripDayId, removedOrderNo, lastOrderNo, -1);
+            shift(tripDayId, removedOrderNo, lastOrderNo, -1);
         }
     }
 
@@ -149,76 +140,72 @@ public class TripService {
                 .orElseThrow(() -> new EntityNotFoundException("item"));
         ensurePlanOwnership(item.getTripDay().getTripPlan(), memberId);
 
-        Long tripDayId = item.getTripDay().getId();
-        int currentOrderNo = item.getOrderNo();
-        int lastOrderNo = tripItemRepository.countByTripDayId(tripDayId);
+        Long dayId = item.getTripDay().getId();
+        int cur = item.getOrderNo();
+        int last = tripItemRepository.countByTripDayId(dayId);
 
-        if (newOrderNo < 1 || newOrderNo > lastOrderNo) {
-            throw new IllegalArgumentException("orderNo 범위 오류");
-        }
-        if (newOrderNo == currentOrderNo) return;
+        if (newOrderNo < 1 || newOrderNo > last) throw new IllegalArgumentException("orderNo 범위 오류");
+        if (newOrderNo == cur) return;
 
-        if (newOrderNo < currentOrderNo) {
-            // 위로 이동: [newOrderNo .. currentOrderNo-1] +1
-            shiftOrderRange(tripDayId, newOrderNo, currentOrderNo - 1, +1);
+        parkItemTemporarily(item);
+
+        if (newOrderNo < cur) {
+            shift(dayId, newOrderNo, cur - 1, +1);
         } else {
-            // 아래로 이동: [currentOrderNo+1 .. newOrderNo] -1
-            shiftOrderRange(tripDayId, currentOrderNo + 1, newOrderNo, -1);
+            shift(dayId, cur + 1, newOrderNo, -1);
         }
         item.setOrderNo(newOrderNo);
+        tripItemRepository.flush();
     }
 
-    // Day 간 이동 (같은 Plan 내)
+
+    // Day 간 이동
+    @Transactional
     public void moveItem(Long itemId, Long targetDayId, Integer newOrderNo, String memberId) {
         TripItem item = tripItemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException("item"));
+        ensurePlanOwnership(item.getTripDay().getTripPlan(), memberId);
 
-        TripDay sourceDay = item.getTripDay();
-        TripDay targetDay = tripDayRepository.findById(targetDayId)
-                .orElseThrow(() -> new EntityNotFoundException("day"));
+        Long srcDayId = item.getTripDay().getId();
+        int srcCur = item.getOrderNo();
+        int srcLast = tripItemRepository.countByTripDayId(srcDayId);
 
-        ensurePlanOwnership(sourceDay.getTripPlan(), memberId);
-
-        if (!sourceDay.getTripPlan().getId().equals(targetDay.getTripPlan().getId())) {
-            throw new IllegalArgumentException("같은 플랜 내에서만 이동할 수 있습니다.");
-        }
-
-        Long sourceDayId = sourceDay.getId();
-        Long destDayId = targetDay.getId();
-
-        // 같은 Day면 reorder로 처리
-        if (sourceDayId.equals(destDayId)) {
-            reorder(itemId, (newOrderNo == null ? item.getOrderNo() : newOrderNo), memberId);
+        if (srcDayId.equals(targetDayId)) {
+            if (newOrderNo != null) reorder(itemId, newOrderNo, memberId);
             return;
         }
 
-        int sourceOrderNo = item.getOrderNo();
-        int sourceLastOrderNo = tripItemRepository.countByTripDayId(sourceDayId);
-        int destLastOrderNo = tripItemRepository.countByTripDayId(destDayId);
-
-        int destPosition;
-        if (newOrderNo != null) {
-            if (newOrderNo < 1 || newOrderNo > destLastOrderNo + 1) {
-                throw new IllegalArgumentException("orderNo 범위 오류");
-            }
-            destPosition = newOrderNo;
-        } else {
-            destPosition = computeInsertPositionByStartTime(destDayId, item.getStartTime(), null);
+        TripDay targetDay = tripDayRepository.findById(targetDayId)
+                .orElseThrow(() -> new EntityNotFoundException("day"));
+        if (!item.getTripDay().getTripPlan().getId().equals(targetDay.getTripPlan().getId())) {
+            throw new IllegalArgumentException("다른 플랜으로 이동할 수 없습니다.");
         }
 
-        // 1) 목적지에 빈칸 만들기
-        if (destPosition <= destLastOrderNo) {
-            shiftOrderRange(destDayId, destPosition, destLastOrderNo, +1);
+        int targetLast = tripItemRepository.countByTripDayId(targetDayId);
+        int pos = (newOrderNo == null) ? targetLast + 1 : newOrderNo;
+        if (pos < 1 || pos > targetLast + 1) throw new IllegalArgumentException("orderNo 범위 오류");
+
+        // 타깃 자리 먼저 확보
+        if (pos <= targetLast) {
+            shift(targetDayId, pos, targetLast, +1);
         }
 
-        // 2) Day/순서 변경
-        item.changeDay(targetDay);
-        item.setOrderNo(destPosition);
+        // 대상 피신 (소스 day의 유니크 회피)
+        parkItemTemporarily(item);
 
-        // 3) 출발지 빈칸 당겨오기
-        if (sourceOrderNo < sourceLastOrderNo) {
-            shiftOrderRange(sourceDayId, sourceOrderNo + 1, sourceLastOrderNo, -1);
+        // Day 이동 + 최종 order 세팅 (타깃 day 유니크도 이미 자리 확보로 안전)
+        item.moveTo(targetDay, pos);
+        tripItemRepository.flush();
+
+        // 소스 day 빈자리 당기기
+        if (srcCur < srcLast) {
+            shift(srcDayId, srcCur + 1, srcLast, -1);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<MyPlanRow> getMyPlans(String memberId) {
+        return tripPlanRepository.findMyPlansAll(memberId);
     }
 
     public List<TripItem> shiftTimesForDay(Long tripDayId, int minutes, String memberId) {
@@ -255,32 +242,31 @@ public class TripService {
         return items;
     }
 
-    // ===== Helpers =====
-    /** startTime 기준 기본 삽입 위치 계산 (동일시각은 기존 순서 유지, null은 맨 뒤) */
-    private int computeInsertPositionByStartTime(Long tripDayId, LocalTime targetTime, Long excludeItemId) {
-        List<TripItem> items = tripItemRepository.findByTripDayIdOrderByOrderNoAsc(tripDayId);
-        int position = 1;
-        for (TripItem it : items) {
-            if (excludeItemId != null && it.getId().equals(excludeItemId)) continue;
-            LocalTime other = it.getStartTime();
-            if (targetTime != null && (other == null || targetTime.isBefore(other))) break;
-            position++;
-        }
-        return position; // 못 찾으면 맨 뒤(last+1)
+
+    private static final int BIG = 100_000;
+
+
+    private void shift(Long dayId, int start, int end, int delta) {
+        if (start > end || delta == 0) return;
+
+
+        tripItemRepository.offsetUp(dayId, start, end, BIG);
+        tripItemRepository.flush();
+
+        int down = BIG - delta;
+        tripItemRepository.normalizeAfterOffset(dayId, start + BIG, end + BIG, down);
+        tripItemRepository.flush();
     }
 
 
-
-    private void shiftOrderRange(Long tripDayId, int startOrderNo, int endOrderNo, int delta) {
-        if (startOrderNo > endOrderNo) return;
-        List<TripItem> affected = tripItemRepository
-                .findByTripDayIdAndOrderNoBetweenOrderByOrderNoAsc(tripDayId, startOrderNo, endOrderNo);
-        for (TripItem it : affected) {
-            it.setOrderNo(it.getOrderNo() + delta);
-        }
+    private void parkItemTemporarily(TripItem item) {
+        item.setOrderNo(BIG * 2); // NOT NULL만 만족하면 OK
+        tripItemRepository.flush();
     }
 
-    private TripPlan getOwnedPlanOrThrow(Long planId, String memberId) {
+
+    @Transactional(readOnly = true)
+    public TripPlan getOwnedPlanOrThrow(Long planId, String memberId) {
         TripPlan plan = tripPlanRepository.findById(planId)
                 .orElseThrow(() -> new EntityNotFoundException("plan"));
         ensurePlanOwnership(plan, memberId);
