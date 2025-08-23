@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>나의 계획 | TravleSay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- 공용 스타일 -->
+  <link rel="stylesheet" href="/css/main.css?v=20250816" />
+  <!-- 페이지 전용 스타일 -->
+  <link rel="stylesheet" href="/css/my-plans.css?v=20250816" />
+
+  <!-- 스크립트 로드 순서: axios -> common-ui -> my-plans (모두 defer) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script defer src="/js/common-ui.js?v=20250816"></script>
+  <script defer src="/js/my-plans.js?v=20250816T1700"></script>
+</head>
+<body>
+<!-- 헤더 (공통 프래그먼트 include) -->
+<header id="__header__" class="site-header" data-include="/fragments/header.html"></header>
+
+<main class="plans-wrap" aria-labelledby="pageTitle">
+  <section class="plans-header">
+    <h1 id="pageTitle" class="sr-only">나의 계획</h1>
+    <div class="headline">
+      <p class="sub">여행 계획을 관리하고 공유하세요.</p>
+    </div>
+    <div class="actions">
+      <button id="createBtn" type="button" class="btn btn-primary">Create</button>
+    </div>
+  </section>
+
+  <section class="plans-card" aria-live="polite">
+    <!-- 리스트 -->
+    <ul id="planList" class="plan-list" role="list">
+      <!-- JS가 채웁니다. 한 행 구조:
+      <li class="plan-row" data-id="{planId}">
+        <time class="date">2025-08-15</time>
+        <div class="title">강원도 정선-계획</div>
+        <div class="pub">공개</div>
+      </li>
+      -->
+    </ul>
+
+    <!-- 빈 상태 -->
+    <div id="emptyState" class="empty" style="display:none;">
+      아직 등록된 계획이 없어요. <b>Create</b> 버튼으로 첫 계획을 만들어 보세요.
+    </div>
+  </section>
+
+  <!-- 페이지네이션 -->
+  <nav id="pagination" class="pagination" aria-label="페이지 이동">
+    <!-- JS가 채웁니다: « 1 2 3 … » -->
+  </nav>
+</main>
+
+<!-- 푸터 (공통 프래그먼트 include) -->
+<footer data-include="/fragments/footer.html"></footer>
+</body>
+</html>
