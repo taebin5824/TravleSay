@@ -7,6 +7,8 @@ import com.taebin.travelsay.dto.trip.day.request.CreateDayRequest;
 import com.taebin.travelsay.dto.trip.day.response.DayResponse;
 import com.taebin.travelsay.dto.trip.plan.request.CreatePlanRequest;
 import com.taebin.travelsay.dto.trip.plan.request.UpdatePlanRequest;
+import com.taebin.travelsay.dto.trip.plan.response.MyPlanRow;
+import com.taebin.travelsay.dto.trip.plan.response.PlanDetailResponse;
 import com.taebin.travelsay.dto.trip.plan.response.PlanResponse;
 import com.taebin.travelsay.security.MemberDetails;
 import com.taebin.travelsay.service.TripService;
@@ -33,13 +35,72 @@ public class TripPlanController {
         return memberDetails.getMemberId();
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<List<MyPlanRow>> myPlan(@AuthenticationPrincipal MemberDetails principal) {
+
+        List<MyPlanRow> rows = tripService.getMyPlans(mid(principal));
+
+        return ResponseEntity.ok(rows);
+    }
+
+    @GetMapping("/{planId}")
+    public ResponseEntity<PlanResponse> getPlan(@PathVariable Long planId,
+                                                @AuthenticationPrincipal MemberDetails principal) {
+        TripPlan p = tripService.getOwnedPlanOrThrow(planId, mid(principal));
+        return ResponseEntity.ok(new PlanResponse(p.getId(), p.getTitle(), p.isPublic(), p.isCompleted()));
+    }
+
+    @GetMapping("/{planId}/detail")
+    public ResponseEntity<PlanDetailResponse> getPlanDetail(
+            @PathVariable Long planId,
+            @AuthenticationPrincipal MemberDetails principal
+    ) {
+        String memberId = mid(principal);
+
+        TripPlan plan = tripService.getOwnedPlanOrThrow(planId, memberId);
+
+
+        List<TripDay> days = tripService.listDays(planId, memberId);
+
+        // Day + Item 매핑
+        List<PlanDetailResponse.DayRow> dayRows = days.stream().map(d -> {
+            java.util.List<com.taebin.travelsay.domain.trip.TripItem> items =
+                    tripService.listItems(d.getId(), memberId);
+
+            List<PlanDetailResponse.ItemRow> itemRows = items.stream()
+                    .map(i -> new PlanDetailResponse.ItemRow(
+                            i.getId(),
+                            i.getStartTime(),
+                            i.getTitle(),
+                            i.getAmount(),
+                            i.getMerchant(),
+                            i.getMemo()
+                    ))
+                    .toList();
+
+            return new PlanDetailResponse.DayRow(d.getId(), d.getTripDate(), itemRows);
+        }).toList();
+
+        PlanDetailResponse body = new PlanDetailResponse(
+                plan.getId(),
+                plan.getTitle(),
+                plan.isPublic(),
+                plan.isCompleted(),
+                dayRows
+        );
+
+        return ResponseEntity.ok(body);
+    }
+
+
+
     @PostMapping
     public ResponseEntity<PlanResponse> createPlan(@Valid @RequestBody CreatePlanRequest request,
                                                    @AuthenticationPrincipal MemberDetails principal) {
         TripPlan plan = tripService.createPlan(mid(principal), request);
         return ResponseEntity
-                .created(URI.create("/api/trips/plans" + plan.getId()))
-                .body(new PlanResponse(plan.getId(), plan.getTitle(), plan.getIsPublic(), plan.getIsCompleted()));
+                .created(URI.create("/api/trips/plans/" + plan.getId()))
+                .body(new PlanResponse(plan.getId(), plan.getTitle(), plan.isPublic(), plan.isCompleted()));
     }
 
     @PatchMapping("/{planId}")
@@ -47,7 +108,7 @@ public class TripPlanController {
                                                    @Valid @RequestBody UpdatePlanRequest request,
                                                    @AuthenticationPrincipal MemberDetails principal) {
         TripPlan plan = tripService.updatePlan(planId, request, mid(principal));
-        return ResponseEntity.ok(new PlanResponse(plan.getId(), plan.getTitle(), plan.getIsPublic(), plan.getIsCompleted()));
+        return ResponseEntity.ok(new PlanResponse(plan.getId(), plan.getTitle(), plan.isPublic(), plan.isCompleted()));
     }
 
     @DeleteMapping("/{planId}")
@@ -72,7 +133,7 @@ public class TripPlanController {
                                               @AuthenticationPrincipal MemberDetails principal){
         TripDay day = tripService.addDay(planId, request.tripDate(), mid(principal));
         return ResponseEntity
-                .created(URI.create("/api/trips/days" + day.getId()))
+                .created(URI.create("/api/trips/days/" + day.getId()))
                 .body(new DayResponse(day.getId(), day.getTripDate()));
     }
 }
