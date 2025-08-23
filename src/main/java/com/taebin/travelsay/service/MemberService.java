@@ -88,6 +88,8 @@ public class MemberService {
                 MemberStatus.ACTIVE,
                 MemberRole.USER
         );
+
+        memberRepository.save(member);
     }
 
     @Transactional(readOnly = true)
