@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>계획 만들기/수정 | TravleSay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- 공용 스타일 -->
+    <link rel="stylesheet" href="/css/main.css?v=20250816" />
+    <!-- 페이지 전용 스타일 -->
+    <link rel="stylesheet" href="/css/plan-edit.css?v=20250816" />
+
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="/js/common-ui.js?v=20250816"></script>
+    <script defer src="/js/plan-edit.js?v=20250816T1"></script>
+</head>
+<body>
+<!-- 헤더 -->
+<header id="__header__" class="site-header" data-include="/fragments/header.html"></header>
+
+<main class="pe-wrap" aria-labelledby="pageTitle">
+    <h1 id="pageTitle" class="sr-only">계획 만들기/수정</h1>
+
+    <!-- Progress indicator will be inserted here by JavaScript -->
+
+    <!-- Plan 헤더 -->
+    <section class="pe-head">
+        <div class="title-line">
+            <input id="planTitle" class="title-input" type="text" placeholder="어디로 떠나시나요? 여행 제목을 입력해주세요 ✈️" />
+            <div class="toggles">
+                <label><input id="isCompleted" type="checkbox" /> <span>여행 완료</span></label>
+                <label><input id="isPublic" type="checkbox" /> <span>플랜 공개</span></label>
+            </div>
+        </div>
+    </section>
+
+    <!-- Day 선택/추가 -->
+    <section class="pe-days">
+        <div class="day-toolbar">
+            <div class="day-tabs" id="dayTabs"><!-- JS 렌더 --></div>
+            <div class="day-actions">
+                <input id="newDayInput" class="day-input" type="date" />
+                <button id="btnAddDay" class="btn btn-primary">📅 Day 추가</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Day 편집 카드 -->
+    <section class="pe-card" id="dayCard" style="display:none;">
+        <div class="day-head">
+            <div class="left">
+                <span class="day-date" id="curDayLabel">YYYY-MM-DD</span>
+                <div class="shift">
+                    <label>⏰ 시간 일괄 조정</label>
+                    <input id="shiftOffset" class="offset-input" type="text" value="00:00" placeholder="예: 01:30 또는 -00:30" />
+                    <button id="btnShift" class="icon-btn" title="시간 조정 적용">✓</button>
+                </div>
+            </div>
+            <div class="right">
+                <button id="btnAddItem" class="btn btn-outline">➕ 아이템 추가</button>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="item-table">
+                <thead>
+                <tr>
+                    <th style="width:160px">⏰ 시간</th>
+                    <th>📍 일정명</th>
+                    <th style="width:130px">💰 예산</th>
+                    <th style="width:160px">🏪 사용처</th>
+                    <th>📝 메모</th>
+                    <th style="width:120px">⚙️ 관리</th>
+                </tr>
+                </thead>
+                <tbody id="itemTbody"><!-- JS 렌더 --></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 하단 버튼 -->
+    <section class="pe-actions">
+        <button id="btnCancel" class="btn btn-ghost">← 취소</button>
+        <button id="btnSave" class="btn btn-primary">💾 저장하기</button>
+    </section>
+</main>
+
+<!-- 푸터 -->
+<footer data-include="/fragments/footer.html"></footer>
+</body>
+</html>
