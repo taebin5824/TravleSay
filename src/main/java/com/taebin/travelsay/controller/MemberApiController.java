@@ -84,16 +84,6 @@ public class MemberApiController {
             @AuthenticationPrincipal MemberDetails memberDetails,
             @RequestBody UpdateProfileRequest req
     ){
-
-        log.warn("[update] DTO class={}, idHash={}, curPw?={}, loginId='{}', pw?={}, pwC?={}, email='{}', phone='{}'",
-                req.getClass().getName(),
-                System.identityHashCode(req),
-                req.currentPassword()!=null && !req.currentPassword().isBlank(),
-                req.loginId(),
-                req.password()!=null && !req.password().isBlank(),
-                req.passwordConfirm()!=null && !req.passwordConfirm().isBlank(),
-                req.email(),
-                req.phoneNumber());
         if (memberDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         UpdateProfileResponse res = memberService.updateProfile(memberDetails.getUsername(), req);
         return ResponseEntity.ok(res);
