@@ -79,9 +79,18 @@ public class TripItem extends BaseTimeEntity {
         this.orderNo = orderNo;
     }
 
-    public void changeDay(TripDay newDay) {
-        if (newDay == null) throw new IllegalArgumentException("newDay is null");
-        this.tripDay = newDay;
+    /** 같은 플랜의 다른 Day로 옮길 때 사용 */
+    public void moveToDay(TripDay targetDay) {
+        if (!this.tripDay.getTripPlan().getId().equals(targetDay.getTripPlan().getId())) {
+            throw new IllegalArgumentException("다른 플랜으로 이동할 수 없습니다.");
+        }
+        this.tripDay = targetDay;
+    }
+
+    /** Day 이동과 새 순서 지정까지 한 번에 */
+    public void moveTo(TripDay targetDay, int newOrderNo) {
+        moveToDay(targetDay);
+        this.orderNo = newOrderNo;
     }
 
 }
