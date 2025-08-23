@@ -1,0 +1,568 @@
+/* Enhanced travel plan editing interface with improved UX flow */
+.pe-wrap {
+    max-width: var(--max);
+    margin: 24px auto 90px;
+    padding: 0 20px;
+}
+
+/* Progress indicator for better UX flow */
+.pe-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    padding: 16px;
+    background: rgba(240, 253, 244, 0.5);
+    border-radius: 16px;
+    border: 1px solid rgba(21, 128, 61, 0.1);
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.progress-step.active {
+    background: linear-gradient(135deg, #15803d 0%, #84cc16 100%);
+    color: white;
+}
+
+.progress-step.completed {
+    background: rgba(21, 128, 61, 0.1);
+    color: #15803d;
+}
+
+.progress-arrow {
+    color: #84cc16;
+    font-weight: bold;
+    margin: 0 8px;
+}
+
+/* Enhanced header section */
+.pe-head {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(21, 128, 61, 0.1);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.pe-head .title-line {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+/* Enhanced title input with better visual hierarchy */
+.title-input {
+    flex: 1;
+    min-width: 300px;
+    font-size: 1.8rem;
+    font-weight: 800;
+    border: none;
+    border-bottom: 3px solid rgba(21, 128, 61, 0.2);
+    padding: 16px 8px;
+    outline: none;
+    background: transparent;
+    color: #1f2937;
+    transition: all 0.3s ease;
+}
+.title-input:focus {
+    border-color: #15803d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(21, 128, 61, 0.1);
+}
+.title-input::placeholder {
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.toggles {
+    display: flex;
+    gap: 24px;
+    color: #374151;
+    font-weight: 600;
+    flex-wrap: wrap;
+}
+
+.toggles label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.toggles label:hover {
+    background: rgba(240, 253, 244, 0.5);
+}
+
+/* Improved day management section with clearer workflow */
+.pe-days {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(21, 128, 61, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.day-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.day-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.day-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Enhanced day chips with better visual feedback */
+.day-chip {
+    padding: 12px 20px;
+    border: 2px solid rgba(21, 128, 61, 0.2);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.day-chip::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.day-chip:hover::before {
+    left: 100%;
+}
+
+.day-chip.active {
+    background: linear-gradient(135deg, #15803d 0%, #84cc16 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 6px 12px rgba(21, 128, 61, 0.3);
+    transform: translateY(-2px);
+}
+
+.day-chip:hover:not(.active) {
+    border-color: #15803d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(21, 128, 61, 0.15);
+}
+
+/* Enhanced input styling with better UX */
+.day-input {
+    border: 2px solid rgba(21, 128, 61, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+.day-input:focus {
+    border-color: #15803d;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+}
+
+/* Enhanced button styling with better hierarchy */
+.btn {
+    border: none;
+    border-radius: 16px;
+    padding: 12px 24px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #15803d 0%, #84cc16 100%);
+    color: #fff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px -3px rgba(21, 128, 61, 0.3);
+}
+
+.btn-outline {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(21, 128, 61, 0.3);
+    color: #15803d;
+}
+.btn-outline:hover {
+    background: #f0fdf4;
+    border-color: #15803d;
+    transform: translateY(-2px);
+}
+
+.btn-ghost {
+    background: transparent;
+    border: 2px solid rgba(21, 128, 61, 0.2);
+    color: #15803d;
+}
+.btn-ghost:hover {
+    background: rgba(240, 253, 244, 0.5);
+    border-color: #15803d;
+}
+
+.icon-btn {
+    border: 2px solid rgba(21, 128, 61, 0.2);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.icon-btn:hover {
+    border-color: #15803d;
+    background: #f0fdf4;
+    transform: scale(1.05);
+}
+
+/* Enhanced card design with better visual hierarchy */
+.pe-card {
+    border: 1px solid rgba(21, 128, 61, 0.15);
+    border-radius: 24px;
+    padding: 24px;
+    margin-top: 16px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+}
+
+.day-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 8px 20px;
+    border-bottom: 2px solid rgba(21, 128, 61, 0.1);
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.day-head .left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.day-date {
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: #15803d;
+    padding: 8px 16px;
+    background: rgba(21, 128, 61, 0.1);
+    border-radius: 12px;
+}
+
+.shift {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #374151;
+    font-weight: 600;
+}
+
+.shift label {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* Enhanced time input with better visibility */
+.offset-input {
+    width: 120px;
+    text-align: center;
+    border: 2px solid rgba(21, 128, 61, 0.2);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+.offset-input:focus {
+    border-color: #15803d;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+}
+
+.table-wrap {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(21, 128, 61, 0.1);
+}
+
+/* Enhanced table with better time display */
+.item-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.item-table th {
+    background: linear-gradient(135deg, #f0fdf4 0%, rgba(132, 204, 22, 0.1) 100%);
+    color: #15803d;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.item-table th,
+.item-table td {
+    border-top: 1px solid rgba(21, 128, 61, 0.1);
+    padding: 16px 12px;
+    vertical-align: middle;
+}
+
+.item-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.item-table tbody tr:hover {
+    background: rgba(240, 253, 244, 0.7);
+    transform: translateX(2px);
+}
+
+/* Improved time input display with better proportions */
+.item-time {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 100px; /* reduced from 160px to save space */
+}
+
+.item-time input[type="time"] {
+    width: 90px; /* reduced from 130px for better proportions */
+    text-align: center;
+    border: 2px solid rgba(21, 128, 61, 0.2);
+    border-radius: 8px;
+    padding: 6px 4px; /* reduced padding for smaller size */
+    font-weight: 600;
+    font-size: 0.85rem; /* reduced font size to fit better */
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+}
+
+.item-time input[type="time"]:focus {
+    border-color: #15803d;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+}
+
+.end-time {
+    font-size: 0.85rem;
+    color: #84cc16;
+    font-weight: 600;
+    padding: 2px 6px;
+    background: rgba(132, 204, 22, 0.1);
+    border-radius: 6px;
+}
+
+/* Enhanced cell input styling with text overflow handling */
+.cell-input {
+    width: 100%;
+    border: 2px solid transparent;
+    background: transparent;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    white-space: nowrap; /* added text overflow handling */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+.cell-input:focus {
+    border-color: #15803d;
+    background: rgba(255, 255, 255, 0.95);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.1);
+    white-space: normal; /* show full text on focus */
+    overflow: visible;
+    z-index: 10;
+}
+
+.cell-input:hover {
+    background: rgba(240, 253, 244, 0.3);
+}
+
+/* Added tooltip functionality for truncated text */
+.cell-input[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 4px;
+}
+
+.cell-input[title]:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #1f2937;
+    z-index: 1000;
+}
+
+.cell-amt {
+    text-align: right;
+    width: 120px;
+    font-weight: 600;
+}
+
+.row-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.row-actions .mini {
+    border: 1px solid rgba(21, 128, 61, 0.2);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.row-actions .mini:hover {
+    border-color: #15803d;
+    background: #f0fdf4;
+    transform: translateY(-1px);
+}
+
+.drag-handle {
+    opacity: 0.6;
+    cursor: grab;
+    user-select: none;
+    color: #15803d;
+    font-size: 1.2rem;
+}
+
+.pe-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid rgba(21, 128, 61, 0.1);
+}
+
+/* Empty state styling */
+.empty td {
+    text-align: center;
+    color: #9ca3af;
+    padding: 32px 14px;
+    font-style: italic;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .pe-head .title-line {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .title-input {
+        min-width: auto;
+        font-size: 1.5rem;
+    }
+
+    .day-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .day-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .day-head .left {
+        justify-content: space-between;
+    }
+
+    .pe-actions {
+        flex-direction: column-reverse;
+    }
+}

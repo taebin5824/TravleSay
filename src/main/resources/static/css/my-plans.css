@@ -1,0 +1,152 @@
+/* Updated to match green theme and modern card design */
+.plans-wrap {
+    max-width: var(--max);
+    margin: 24px auto 80px;
+    padding: 0 20px;
+}
+
+.plans-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+/* Green themed primary button */
+.btn.btn-primary {
+    background: linear-gradient(135deg, #15803d 0%, #84cc16 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 16px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+.btn.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Enhanced card design with better shadows and rounded corners */
+.plans-card {
+    border: 1px solid rgba(21, 128, 61, 0.1);
+    border-radius: 24px;
+    padding: 8px 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.plan-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Improved hover effects and spacing */
+.plan-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 80px; /* Increased date column width to 200px to accommodate "(기한지남)" text */
+    gap: 16px;
+    align-items: center;
+    padding: 18px 24px;
+    transition: all 0.2s ease;
+}
+.plan-row + .plan-row {
+    border-top: 1px solid rgba(21, 128, 61, 0.1);
+}
+.plan-row:hover {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    cursor: pointer;
+    transform: translateX(4px);
+}
+
+.date {
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    font-variant-numeric: tabular-nums;
+    color: #15803d;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Updated past date styling with red color for overdue status */
+.date.past {
+    text-decoration: line-through;
+    color: #dc2626; /* Red color for overdue items */
+}
+/* Added specific styling for completed plans */
+.date.completed {
+    color: #84cc16;
+    text-decoration: none; /* Remove line-through for completed items */
+}
+
+.title {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #1f2937;
+}
+
+.pub {
+    text-align: right;
+    font-weight: 700;
+    color: #84cc16;
+}
+
+.empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+/* Modern pagination styling */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+.page-btn {
+    border: none;
+    background: none;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.page-btn.active {
+    background: #15803d;
+    color: #fff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.page-btn:disabled,
+.page-btn.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.dots {
+    padding: 0 4px;
+    color: var(--muted);
+}
+
+/* Enhanced badge styling */
+.plan-row .badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #84cc16 0%, #15803d 100%);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.plan-row.completed .title {
+    color: #9ca3af;
+}
