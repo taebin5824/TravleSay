@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>계획 상세 | TravleSay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- 공용 스타일 -->
+    <link rel="stylesheet" href="/css/main.css?v=20250816" />
+    <!-- 상세 전용 -->
+    <link rel="stylesheet" href="/css/plan-detail.css?v=20250822" />
+
+    <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer src="/js/common-ui.js?v=20250816"></script>
+    <script defer src="/js/plan-detail.js?v=20250822T1900"></script>
+</head>
+<body>
+<header id="__header__" class="site-header" data-include="/fragments/header.html"></header>
+
+<main class="detail-wrap" aria-labelledby="pageTitle">
+    <!-- Removed separate nav section and moved button to header -->
+    <section class="detail-head">
+        <h1 id="pageTitle" class="title">
+            <span id="planTitle">계획 제목</span>
+            <span id="planBadges" class="badges"></span>
+        </h1>
+        <!-- Added back button to top right of content box -->
+        <button id="btnBackToList" class="btn btn-back">← 목록으로</button>
+    </section>
+
+    <section id="daysContainer" class="days-container" aria-live="polite">
+    </section>
+
+    <section class="detail-actions">
+        <button id="btnDelete" class="btn btn-danger">Delete</button>
+        <button id="btnUpdate" class="btn btn-primary">Update</button>
+    </section>
+</main>
+
+<!-- Added modal for displaying full text content -->
+<div id="textModal" class="text-modal" style="display: none;">
+    <div class="modal-overlay" onclick="closeTextModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">전체 내용</h3>
+            <button class="modal-close" onclick="closeTextModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="modalText"></p>
+        </div>
+    </div>
+</div>
+
+<footer data-include="/fragments/footer.html"></footer>
+</body>
+</html>
