@@ -132,7 +132,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 공개 페이지
         if (p.equals("/") || p.equals("/index.html") || p.equals("/login.html")
                 || p.equals("/signup.html") || p.equals("/profile-edit.html")
-                || p.equals("/withdraw.html")) return true;
+                || p.equals("/withdraw.html") || p.equals("/my-plans.html")
+                || p.equals("/plan-edit.html") || p.equals("/plan-detail.html")) return true;
 
         // 공개 API
         if (p.equals("/api/member/signup") || p.equals("/api/member/login")) return true;
